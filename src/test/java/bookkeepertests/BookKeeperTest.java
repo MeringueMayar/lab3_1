@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package bookkeepertests;
 
 import java.util.Date;
@@ -23,7 +18,7 @@ import pl.com.bottega.ecommerce.sharedkernel.*;
 
 /**
  *
- * @author karko
+ * @author 204641
  */
 @RunWith(MockitoJUnitRunner.class)
 public class BookKeeperTest {
@@ -38,25 +33,27 @@ public class BookKeeperTest {
     BookKeeper bookKeeper;
     InvoiceFactory invoiceFactory;
     TaxPolicy taxPolicy;
+    
     @Before
     public void setUp(){
         invoiceFactory = new InvoiceFactory();
         bookKeeper = new BookKeeper(invoiceFactory);
         Id id = Id.generate();
-        clientData = new ClientData(id, "testname");
-        productData = new ProductData(id, new Money(8), "tes-product-data", ProductType.STANDARD, new Date());
+        clientData = new ClientData(id, "test-name");
+        productData = new ProductData(id, new Money(8), "test-product-data", ProductType.STANDARD, new Date());
         requestItemOne = new RequestItem(productData, 10, new Money(80));
         requestItemTwo = new RequestItem(productData, 10, new Money(80));
         invoiceRequest = new InvoiceRequest(clientData);
         taxPolicy = new TaxPolicy() {
             @Override
             public Tax calculateTax(ProductType productType, Money net) {
-                return new Tax(new Money(13), "testtax");
+                return new Tax(new Money(13), "test-tax");
             }
         };
         bookKeeper.issuance(invoiceRequest, taxPolicy);
     }
     
+    //State tests
     @Test
     public void issuanceMethodCallWithOnePositionShouldReturnInvoiceWithOnePosition() {
         invoiceRequest.add(requestItemOne);
@@ -65,6 +62,13 @@ public class BookKeeperTest {
         assertThat(invoice.getItems().size(), is(1));
     }
     
+    @Test
+    public void issuanceMethodCallWithNoPositionsShouldReturnInvoiceWithNoPositions() {
+        Invoice invoice = bookKeeper.issuance(invoiceRequest, taxPolicy);
+        assertThat(invoice.getItems().size(), is(0));
+    }
+    
+    //Behavioral tests
     @Captor 
     ArgumentCaptor <ProductType> argumentCaptorProductType;
     @Captor 
@@ -77,10 +81,21 @@ public class BookKeeperTest {
 
         when(taxPolicyMock.calculateTax(
                 Mockito.any(ProductType.class), Mockito.any(Money.class))).
-                thenReturn(new Tax(new Money(5), "test tax"));
+                thenReturn(new Tax(new Money(5), "test-tax"));
 
         bookKeeper.issuance(invoiceRequest, taxPolicyMock);
         verify(taxPolicyMock, times(2)).
+                calculateTax(argumentCaptorProductType.capture(), argumentCaptorMoney.capture());
+    }
+    
+    @Test
+    public void issuanceMethodCallWithNoPositionsRequestShouldNotCallCalculateTaxMethod() {
+        when(taxPolicyMock.calculateTax(
+                Mockito.any(ProductType.class), Mockito.any(Money.class))).
+                thenReturn(new Tax(new Money(5), "test-tax"));
+
+        bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+        verify(taxPolicyMock, times(0)).
                 calculateTax(argumentCaptorProductType.capture(), argumentCaptorMoney.capture());
     }
 }
