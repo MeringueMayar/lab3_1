@@ -30,41 +30,32 @@ import pl.com.bottega.ecommerce.system.application.SystemContext;
 
 public class AddProductCommandHandler implements CommandHandler<AddProductCommand, Void>{
 
+    private ReservationRepository reservationRepository;
+    private ProductRepository productRepository;
+    private SuggestionService suggestionService;
+    private ClientRepository clientRepository;
+    private SystemContext systemContext;
 
-	private ReservationRepository reservationRepository;
-	
+    @Override
+    public Void handle(AddProductCommand command) {
+        Reservation reservation = reservationRepository.load(command.getOrderId());
 
-	private ProductRepository productRepository;
-	
+        Product product = productRepository.load(command.getProductId());
 
-	private SuggestionService suggestionService;
-	
+        if (! product.isAvailable()){
+                Client client = loadClient();	
+                product = suggestionService.suggestEquivalent(product, client);
+        }
 
-	private ClientRepository clientRepository;
-	
+        reservation.add(product, command.getQuantity());
 
-	private SystemContext systemContext;
-	
-	@Override
-	public Void handle(AddProductCommand command) {
-		Reservation reservation = reservationRepository.load(command.getOrderId());
-		
-		Product product = productRepository.load(command.getProductId());
-		
-		if (! product.isAvailable()){
-			Client client = loadClient();	
-			product = suggestionService.suggestEquivalent(product, client);
-		}
-			
-		reservation.add(product, command.getQuantity());
-		
-		reservationRepository.save(reservation);
-		
-		return null;
-	}
-	
-	private Client loadClient() {
-		return clientRepository.load(systemContext.getSystemUser().getClientId());
-	}
+        reservationRepository.save(reservation);
+
+        return null;
+    }
+
+    private Client loadClient() {
+            return clientRepository.load(systemContext.getSystemUser().getClientId());
+    }
 
 }
