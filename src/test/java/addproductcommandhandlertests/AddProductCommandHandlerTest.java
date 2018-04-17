@@ -1,6 +1,6 @@
 package addproductcommandhandlertests;
 
-
+import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +8,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.internal.util.reflection.Whitebox;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Captor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sales.application.api.command.AddProductCommand;
@@ -19,17 +26,6 @@ import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductType;
 import pl.com.bottega.ecommerce.sales.domain.reservation.Reservation;
 import pl.com.bottega.ecommerce.sales.domain.reservation.ReservationRepository;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
-
-import java.util.Date;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import org.mockito.Captor;
-import static org.mockito.Matchers.any;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import pl.com.bottega.ecommerce.sales.application.api.handler.AddProductCommandHandler;
 
 
@@ -56,7 +52,9 @@ public class AddProductCommandHandlerTest {
     SuggestionService suggestionServiceMock;
     @Mock
     ClientRepository clientRepositoryMock;
-    
+    @Mock
+    Reservation reservationMock;
+
     @Before
     public void setUp(){
         commandHandler = new AddProductCommandHandler();
@@ -97,8 +95,54 @@ public class AddProductCommandHandlerTest {
         assertThat(argumentCaptorId.getValue(), is(command.getProductId()));
     }
     
+    @Captor
+    ArgumentCaptor <Reservation> argumentCaptorReservation;
+    
     @Test
     public void handleMethodCallShouldCallReservationSaveOnce() {
-        verify(reservationRepositoryMock, times(1)).save(Mockito.any(Reservation.class));
+        verify(reservationRepositoryMock, times(1)).save(argumentCaptorReservation.capture());
+        assertThat(argumentCaptorReservation.getValue(), is(reservation));
     }
+    
+    @Captor
+    ArgumentCaptor <Product> argumentCaptorProduct;
+    @Captor
+    ArgumentCaptor <Integer> argumentCaptorQuantity;
+    
+    @Test
+    public void handleMethodCallShouldCallReservationAddOnce() {
+        when(reservationRepositoryMock.load(any(Id.class))).thenReturn(reservationMock);
+
+        commandHandler.handle(command);
+        
+        verify(reservationMock, times(1)).
+                add(argumentCaptorProduct.capture(), argumentCaptorQuantity.capture());
+        assertThat(argumentCaptorProduct.getValue(), is(product));
+        assertThat(argumentCaptorQuantity.getValue(), is(10));
+    }
+    
+    
+    
+    
+    /*
+    //Behavioral tests
+    @Captor 
+    ArgumentCaptor <ProductType> argumentCaptorProductType;
+    @Captor 
+    ArgumentCaptor <Money> argumentCaptorMoney;
+    
+    @Test
+    public void issuanceMethodCallWithTwoPositionRequestShouldCallCalculateTaxMethodTwice() {
+        invoiceRequest.add(requestItemOne);
+        invoiceRequest.add(requestItemTwo);
+
+        when(taxPolicyMock.calculateTax(
+                Mockito.any(ProductType.class), Mockito.any(Money.class))).
+                thenReturn(new Tax(new Money(5), "test-tax"));
+
+        bookKeeper.issuance(invoiceRequest, taxPolicyMock);
+        verify(taxPolicyMock, times(2)).
+                calculateTax(argumentCaptorProductType.capture(), argumentCaptorMoney.capture());
+    }
+    */
 }
