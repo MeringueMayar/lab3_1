@@ -44,10 +44,9 @@ public class AddProductCommandHandlerTest {
     
     AddProductCommandHandler commandHandler;
     AddProductCommand command;
-    int quantity;
     Reservation reservation;
     ClientData clientData;
-    
+    Product product;
     
     @Mock
     ReservationRepository reservationRepositoryMock;
@@ -65,18 +64,21 @@ public class AddProductCommandHandlerTest {
         command = new AddProductCommand(Id.generate(), Id.generate(), 10);
         
         reservation = new Reservation(Id.generate(), Reservation.ReservationStatus.OPENED,
-                                                clientData, new Date());
-        when(reservationRepositoryMock.load(any(Id.class))).thenReturn(reservation);        
+                clientData, new Date());
         
+        product = new Product(Id.generate(), new Money(10),
+                "test product name", ProductType.FOOD);
+        
+        when(reservationRepositoryMock.load(any(Id.class)))
+                .thenReturn(reservation);        
+        
+        when(productRepositoryMock.load(any(Id.class)))
+                .thenReturn(product);
 
-        Product product = new Product(Id.generate(), new Money(10),
-                                    "test product name", ProductType.FOOD);
-        when(productRepositoryMock.load(any(Id.class))).thenReturn(product);
-
-        //addProductCommand = new AddProductCommand(orderId, productId, quantity);
         Whitebox.setInternalState(commandHandler, "reservationRepository", reservationRepositoryMock);
         Whitebox.setInternalState(commandHandler, "productRepository", productRepositoryMock);
-
+        
+        commandHandler.handle(command);
     }
     
     //State tests
@@ -85,17 +87,18 @@ public class AddProductCommandHandlerTest {
     
     @Test
     public void handleMethodCallShouldCallReservationRepositoryLoadOnce() {
-        commandHandler.handle(command);
-        
         verify(reservationRepositoryMock, times(1)).load(argumentCaptorId.capture());
         assertThat(argumentCaptorId.getValue(), is(command.getOrderId()));
     }
     
     @Test
-    public void handleMethodCallShouldCallReservationSaveOnce() {
-        commandHandler.handle(command);
-        
-        verify(reservationRepositoryMock, times(1)).save(Mockito.any(Reservation.class));
+    public void handleMethodCallShouldCallProductRepositoryLoadOnce() {
+        verify(productRepositoryMock, times(1)).load(argumentCaptorId.capture());
+        assertThat(argumentCaptorId.getValue(), is(command.getProductId()));
     }
     
+    @Test
+    public void handleMethodCallShouldCallReservationSaveOnce() {
+        verify(reservationRepositoryMock, times(1)).save(Mockito.any(Reservation.class));
+    }
 }
