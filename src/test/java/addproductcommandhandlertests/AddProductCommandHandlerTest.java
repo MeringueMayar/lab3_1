@@ -79,7 +79,6 @@ public class AddProductCommandHandlerTest {
         commandHandler.handle(command);
     }
     
-    //State tests
     @Captor
     ArgumentCaptor <Id> argumentCaptorId;
     
@@ -120,29 +119,4 @@ public class AddProductCommandHandlerTest {
         assertThat(argumentCaptorProduct.getValue(), is(product));
         assertThat(argumentCaptorQuantity.getValue(), is(10));
     }
-    
-    
-    
-    
-    /*
-    //Behavioral tests
-    @Captor 
-    ArgumentCaptor <ProductType> argumentCaptorProductType;
-    @Captor 
-    ArgumentCaptor <Money> argumentCaptorMoney;
-    
-    @Test
-    public void issuanceMethodCallWithTwoPositionRequestShouldCallCalculateTaxMethodTwice() {
-        invoiceRequest.add(requestItemOne);
-        invoiceRequest.add(requestItemTwo);
-
-        when(taxPolicyMock.calculateTax(
-                Mockito.any(ProductType.class), Mockito.any(Money.class))).
-                thenReturn(new Tax(new Money(5), "test-tax"));
-
-        bookKeeper.issuance(invoiceRequest, taxPolicyMock);
-        verify(taxPolicyMock, times(2)).
-                calculateTax(argumentCaptorProductType.capture(), argumentCaptorMoney.capture());
-    }
-    */
 }
