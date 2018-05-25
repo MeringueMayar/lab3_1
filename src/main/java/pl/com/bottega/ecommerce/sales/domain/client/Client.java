@@ -2,6 +2,7 @@ package pl.com.bottega.ecommerce.sales.domain.client;
 
 import pl.com.bottega.ddd.support.domain.BaseAggregateRoot;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
+import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientDataBuilder;
 import pl.com.bottega.ecommerce.sales.domain.payment.Payment;
 import pl.com.bottega.ecommerce.sales.domain.payment.PaymentFactory;
 import pl.com.bottega.ecommerce.sharedkernel.Money;
@@ -13,7 +14,7 @@ private String name;
 	private PaymentFactory paymentFactory;
 	
 	public ClientData generateSnapshot(){
-		return new ClientData(id, name);
+		return new ClientDataBuilder().setId(id).setName(name).createClientData();
 	}
 
 	public boolean canAfford(Money amount) {		

@@ -16,6 +16,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientData;
+import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientDataBuilder;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.Id;
 import pl.com.bottega.ecommerce.sales.application.api.command.AddProductCommand;
 import pl.com.bottega.ecommerce.sales.domain.client.ClientRepository;
@@ -58,7 +59,7 @@ public class AddProductCommandHandlerTest {
     @Before
     public void setUp(){
         commandHandler = new AddProductCommandHandler();
-        clientData = new ClientData(Id.generate(), "test-client");
+        clientData = new ClientDataBuilder().setId(Id.generate()).setName("test-client").createClientData();
         command = new AddProductCommand(Id.generate(), Id.generate(), 10);
         
         reservation = new Reservation(Id.generate(), Reservation.ReservationStatus.OPENED,

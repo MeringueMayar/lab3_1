@@ -43,6 +43,6 @@ public class Product extends BaseAggregateRoot{
 	}
 	
 	public ProductData generateSnapshot(){
-		return new ProductData(getId(), price, name, productType, new Date());
+		return new ProductDataBuilder().setProductId(getId()).setPrice(price).setName(name).setType(productType).setSnapshotDate(new Date()).createProductData();
 	}
 }

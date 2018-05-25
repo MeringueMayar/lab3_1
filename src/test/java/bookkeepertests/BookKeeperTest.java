@@ -12,8 +12,11 @@ import org.mockito.Mockito;
 import static org.mockito.Mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.*;
+import pl.com.bottega.ecommerce.canonicalmodel.publishedlanguage.ClientDataBuilder;
 import pl.com.bottega.ecommerce.sales.domain.invoicing.*;
+import pl.com.bottega.ecommerce.sales.domain.invoicing.RequestItemBuilder;
 import pl.com.bottega.ecommerce.sales.domain.productscatalog.*;
+import pl.com.bottega.ecommerce.sales.domain.productscatalog.ProductDataBuilder;
 import pl.com.bottega.ecommerce.sharedkernel.*;
 
 /**
@@ -39,10 +42,10 @@ public class BookKeeperTest {
         invoiceFactory = new InvoiceFactory();
         bookKeeper = new BookKeeper(invoiceFactory);
         Id id = Id.generate();
-        clientData = new ClientData(id, "test-name");
-        productData = new ProductData(id, new Money(8), "test-product-data", ProductType.STANDARD, new Date());
-        requestItemOne = new RequestItem(productData, 10, new Money(80));
-        requestItemTwo = new RequestItem(productData, 10, new Money(80));
+        clientData = new ClientDataBuilder().setId(id).setName("test-name").createClientData();
+        productData = new ProductDataBuilder().setProductId(id).setPrice(new Money(8)).setName("test-product-data").setType(ProductType.STANDARD).setSnapshotDate(new Date()).createProductData();
+        requestItemOne = new RequestItemBuilder().setProductData(productData).setQuantity(10).setTotalCost(new Money(80)).createRequestItem();
+        requestItemTwo = new RequestItemBuilder().setProductData(productData).setQuantity(10).setTotalCost(new Money(80)).createRequestItem();
         invoiceRequest = new InvoiceRequest(clientData);
         taxPolicy = new TaxPolicy() {
             @Override
